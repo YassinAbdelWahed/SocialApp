@@ -6,7 +6,7 @@ import { UserRepository } from "../../DB/repository/user.repository";
 import { BadRequestException, UnauthorizedException } from "../response/error.response";
 import { UserModel } from "../../DB/model/User.model";
 import { TokenRepository } from '../../DB/repository/token.repository';
-import { HTokenDocument, TokenModel } from '../../DB/model/token.model';
+import { HTokenDocument, TokenModel } from '../../DB/model/Token.model';
 
 export enum SignatureLevelEnum {
     bearer = "Bearer",

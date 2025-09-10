@@ -34,12 +34,18 @@ export interface IUser {
     address?: string;
 
     profileImage?: string;
+    temprofileImage?: string;
     coverImage?: string[];
 
     gender: GenderEnum;
     role: RoleEnum;
 
     provider: ProviderEnum;
+
+    freezedAt?: Date;
+    freezedBy?: Types.ObjectId;
+    restoredAt?: Date;
+    restoredBy?: Types.ObjectId;
 
     updatedAt?: Date;
     createdAt: Date;
@@ -66,12 +72,18 @@ const userSchema = new Schema<IUser>({
     address: { type: String },
 
     profileImage: { type: String },
+    temprofileImage: { type: String },
     coverImage: [String],
 
     gender: { type: String, enum: GenderEnum, default: GenderEnum.male },
     role: { type: String, enum: RoleEnum, default: RoleEnum.user },
 
     provider: { type: String, enum: ProviderEnum, default: ProviderEnum.SYSTEM },
+
+    freezedAt: Date,
+    freezedBy: { type: Schema.Types.ObjectId, ref: "User" },
+    restoredAt: Date,
+    restoredBy: { type: Schema.Types.ObjectId, ref: "User" },
 
 }, {
     timestamps: true,
