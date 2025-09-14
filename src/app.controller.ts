@@ -9,12 +9,12 @@ import cors from "cors";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit"
 
-import authController from "./modules/auth/auth.controller";
-import userController from "./modules/user/user.controller";
+import { authRouter, postRouter, userRouter } from "./modules";
+
 import { BadRequestException, globalErrorHandling } from "./utils/response/error.response";
 import connectDB from "./DB/connections.db";
 
-import { createGetPreSignedLink, deleteFile, deleteFiles, deleteFolderByPrefix, getFile } from "./utils/multer/s3.config";
+import { createGetPreSignedLink, getFile } from "./utils/multer/s3.config";
 
 import { promisify } from "node:util";
 import { pipeline } from "node:stream";
@@ -38,9 +38,9 @@ const bootstrap = async (): Promise<void> => {
         res.json({ message: `Welcome to ${process.env.APPLICATION_NAME} backend landing page` });
     });
 
-    app.use("/auth", authController);
-
-    app.use("/user", userController);
+    app.use("/auth", authRouter);
+    app.use("/user", userRouter);
+    app.use("/post", postRouter);
 
     app.get("/upload/*path", async (req: Request, res: Response): Promise<void> => {
 

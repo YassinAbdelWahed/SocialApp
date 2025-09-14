@@ -2,10 +2,10 @@ import { v4 as uuid } from 'uuid'
 import type { JwtPayload, Secret, SignOptions } from "jsonwebtoken";
 import { sign, verify } from "jsonwebtoken";
 import { RoleEnum, HUserDocument } from "../../DB/model/User.model";
-import { UserRepository } from "../../DB/repository/user.repository";
+import { UserRepository } from "../../DB/repository";
 import { BadRequestException, UnauthorizedException } from "../response/error.response";
 import { UserModel } from "../../DB/model/User.model";
-import { TokenRepository } from '../../DB/repository/token.repository';
+import { TokenRepository } from '../../DB/repository';
 import { HTokenDocument, TokenModel } from '../../DB/model/Token.model';
 
 export enum SignatureLevelEnum {

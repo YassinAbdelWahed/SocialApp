@@ -4,10 +4,10 @@ exports.createRevokeToken = exports.decodeToken = exports.createLoginCrendential
 const uuid_1 = require("uuid");
 const jsonwebtoken_1 = require("jsonwebtoken");
 const User_model_1 = require("../../DB/model/User.model");
-const user_repository_1 = require("../../DB/repository/user.repository");
+const repository_1 = require("../../DB/repository");
 const error_response_1 = require("../response/error.response");
 const User_model_2 = require("../../DB/model/User.model");
-const token_repository_1 = require("../../DB/repository/token.repository");
+const repository_2 = require("../../DB/repository");
 const Token_model_1 = require("../../DB/model/Token.model");
 var SignatureLevelEnum;
 (function (SignatureLevelEnum) {
@@ -82,8 +82,8 @@ const createLoginCrendentials = async (user) => {
 };
 exports.createLoginCrendentials = createLoginCrendentials;
 const decodeToken = async ({ authorization, tokenType = TokenEnum.access, }) => {
-    const userModel = new user_repository_1.UserRepository(User_model_2.UserModel);
-    const tokenModel = new token_repository_1.TokenRepository(Token_model_1.TokenModel);
+    const userModel = new repository_1.UserRepository(User_model_2.UserModel);
+    const tokenModel = new repository_2.TokenRepository(Token_model_1.TokenModel);
     const [bearerKey, token] = authorization.split(" ");
     if (!bearerKey || !token) {
         throw new error_response_1.UnauthorizedException("missing token parts");
@@ -110,7 +110,7 @@ const decodeToken = async ({ authorization, tokenType = TokenEnum.access, }) => 
 };
 exports.decodeToken = decodeToken;
 const createRevokeToken = async (decoded) => {
-    const tokenModel = new token_repository_1.TokenRepository(Token_model_1.TokenModel);
+    const tokenModel = new repository_2.TokenRepository(Token_model_1.TokenModel);
     const [result] = (await tokenModel.create({
         data: [
             {

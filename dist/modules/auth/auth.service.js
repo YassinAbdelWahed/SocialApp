@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const User_model_1 = require("../../DB/model/User.model");
-const user_repository_1 = require("../../DB/repository/user.repository");
+const repository_1 = require("../../DB/repository");
 const error_response_1 = require("../../utils/response/error.response");
 const hash_security_1 = require("../../utils/security/hash.security");
 const email_event_1 = require("../../utils/event/email.event");
@@ -10,7 +10,7 @@ const token_security_1 = require("../../utils/security/token.security");
 const google_auth_library_1 = require("google-auth-library");
 const success_response_1 = require("../../utils/response/success.response");
 class AuthenticationService {
-    userModel = new user_repository_1.UserRepository(User_model_1.UserModel);
+    userModel = new repository_1.UserRepository(User_model_1.UserModel);
     constructor() { }
     async verifyGmailAccount(idToken) {
         const client = new google_auth_library_1.OAuth2Client();
@@ -40,10 +40,8 @@ class AuthenticationService {
         }
         const otp = (0, otp_1.generateNumberOtp)();
         await this.userModel.createUser({
-            data: [{ username, email, password: await (0, hash_security_1.generateHash)(password), confirmEmailOtp: await (0, hash_security_1.generateHash)(String(otp)) }],
+            data: [{ username, email, password, confirmEmailOtp: `${otp}` }], options: { validateBeforeSave: true },
         });
-        email_event_1.emailEvent.emit("confirmEmail", { to: email, otp });
-        console.log(email);
         return (0, success_response_1.successResponse)({ res, statusCode: 201 });
     };
     signupWithGmail = async (req, res) => {

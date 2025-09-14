@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { IConfirmEmailBodyInputsDto, ISignupBodyInputsDto, ILoginBodyInputsDto, IGmail, IForgotPasswordCodeInputsDto, IVerifyForgotPasswordCodeInputsDto, IResetForgotPasswordCodeInputsDto } from "./auth.dto";
 import { ProviderEnum, UserModel } from "../../DB/model/User.model";
-import { UserRepository } from "../../DB/repository/user.repository";
+import { UserRepository } from "../../DB/repository";
 import { BadRequestException, ConflictException, NotFoundException } from "../../utils/response/error.response";
 import { compareHash, generateHash } from "../../utils/security/hash.security";
 import { emailEvent } from "../../utils/event/email.event";
@@ -60,11 +60,11 @@ class AuthenticationService {
         const otp = generateNumberOtp();
 
         await this.userModel.createUser({
-            data: [{ username, email, password: await generateHash(password), confirmEmailOtp: await generateHash(String(otp)) }],
+            data: [{ username, email, password, confirmEmailOtp: `${otp}` }], options: { validateBeforeSave: true },
         })
 
-        emailEvent.emit("confirmEmail", { to: email, otp });
-        console.log(email)
+        // emailEvent.emit("confirmEmail", { to: email, otp });
+        // console.log(email)
 
         return successResponse({ res, statusCode: 201 });
     };

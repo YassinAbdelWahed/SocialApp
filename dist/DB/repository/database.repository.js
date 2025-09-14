@@ -6,6 +6,22 @@ class DatabaseRespository {
     constructor(model) {
         this.model = model;
     }
+    async find({ filter, select, options, }) {
+        const doc = this.model.find(filter || {}).select(select || "");
+        if (options?.populate) {
+            doc.populate(options.populate);
+        }
+        if (options?.skip) {
+            doc.skip(options.skip);
+        }
+        if (options?.limit) {
+            doc.limit(options.limit);
+        }
+        if (options?.lean) {
+            doc.lean();
+        }
+        return await doc.exec();
+    }
     async findOne({ filter, select, options, }) {
         const doc = this.model.findOne(filter).select(select || "");
         if (options?.lean) {
@@ -24,6 +40,12 @@ class DatabaseRespository {
     }
     async findByIdAndUpdate({ id, update, options = { new: true }, }) {
         return this.model.findByIdAndUpdate(id, {
+            ...update,
+            $inc: { __v: 1 },
+        }, options);
+    }
+    async findOneAndUpdate({ filter, update, options = { new: true }, }) {
+        return this.model.findOneAndUpdate(filter, {
             ...update,
             $inc: { __v: 1 },
         }, options);
