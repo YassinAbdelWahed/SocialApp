@@ -157,34 +157,10 @@ class PostService {
             filter: {
                 $or: (0, exports.postAvailability)(req),
             },
-            options: {
-                populate: [
-                    {
-                        path: "comments",
-                        match: {
-                            commentId: { $exists: false },
-                            freezedAt: { $exists: false },
-                        },
-                        populate: [{
-                                path: "reply",
-                                match: {
-                                    commentId: { $exists: false },
-                                    freezedAt: { $exists: false },
-                                },
-                                populate: [{
-                                        path: "reply",
-                                        match: {
-                                            commentId: { $exists: false },
-                                            freezedAt: { $exists: false },
-                                        }
-                                    }]
-                            }]
-                    }
-                ]
-            },
             page,
             size,
         });
+        console.log({ s: posts.length });
         return (0, success_response_1.successResponse)({ res, data: { posts } });
     };
 }

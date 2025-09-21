@@ -10,6 +10,7 @@ export enum GenderEnum {
 export enum RoleEnum {
     user = "user",
     admin = "admin",
+    superAdmin = "super-admin",
 }
 
 export enum ProviderEnum {
@@ -51,6 +52,9 @@ export interface IUser {
 
     updatedAt?: Date;
     createdAt: Date;
+
+    friends?: Types.ObjectId[];
+
 }
 
 const userSchema = new Schema<IUser>({
@@ -86,6 +90,8 @@ const userSchema = new Schema<IUser>({
     freezedBy: { type: Schema.Types.ObjectId, ref: "User" },
     restoredAt: Date,
     restoredBy: { type: Schema.Types.ObjectId, ref: "User" },
+
+    friends: [{ type: Schema.Types.ObjectId, ref: "User" }],
 
 }, {
     timestamps: true,

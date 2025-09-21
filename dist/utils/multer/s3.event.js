@@ -24,11 +24,15 @@ exports.s3Event.on("trackProfileImageUpload", (data) => {
         catch (error) {
             console.log(error);
             if (error.Code === "NoSuchKey") {
+                let unsetData = { temprofileImage: 1 };
+                if (!data.oldKey) {
+                    unsetData = { temprofileImage: 1, profileImage: 1 };
+                }
                 await userModel.updateOne({
                     filter: { _id: data.userId },
                     update: {
                         profileImage: data.oldKey,
-                        $unset: { temProfileImage: 1 },
+                        $unset: unsetData,
                     }
                 });
             }

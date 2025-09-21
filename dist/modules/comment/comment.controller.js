@@ -32,18 +32,17 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const authentication_middleware_1 = require("../../middleware/authentication.middleware");
-const post_service_1 = require("./post.service");
 const cloud_multer_1 = require("../../utils/multer/cloud.multer");
+const comment_service_1 = __importDefault(require("./comment.service"));
+const validators = __importStar(require("./comment.validation"));
 const validation_middleware_1 = require("../../middleware/validation.middleware");
-const validators = __importStar(require("./post.validation"));
-const comment_1 = require("../comment");
-const router = (0, express_1.Router)();
-router.use("/:postId/comment", comment_1.commentRouter);
-router.post("/", (0, authentication_middleware_1.authentication)(), (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image }).array("attachments", 2), (0, validation_middleware_1.validation)(validators.createPost), post_service_1.postService.createPost);
-router.get("/", (0, authentication_middleware_1.authentication)(), post_service_1.postService.postList);
-router.patch("/:postId", (0, authentication_middleware_1.authentication)(), (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image }).array("attachments", 2), (0, validation_middleware_1.validation)(validators.updatePost), post_service_1.postService.updatePost);
-router.patch("/:postId/like", (0, authentication_middleware_1.authentication)(), (0, validation_middleware_1.validation)(validators.likePost), post_service_1.postService.likePost);
+const router = (0, express_1.Router)({ mergeParams: true });
+router.post("/", (0, authentication_middleware_1.authentication)(), (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image }).array("attachments", 2), (0, validation_middleware_1.validation)(validators.createComment), comment_service_1.default.createComment);
+router.post("/:commentId/reply", (0, authentication_middleware_1.authentication)(), (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image }).array("attachments", 2), (0, validation_middleware_1.validation)(validators.replyComment), comment_service_1.default.replyComment);
 exports.default = router;
