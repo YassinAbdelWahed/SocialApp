@@ -11,6 +11,7 @@ const success_response_1 = require("../../utils/response/success.response");
 const repository_1 = require("../../DB/repository");
 const model_1 = require("../../DB/model");
 class UserService {
+    chatmodel = new repository_1.ChatRepository(model_1.ChatModel);
     userModel = new user_repository_1.UserRepository(User_model_1.UserModel);
     postModel = new repository_1.PostRepository(model_1.PostModel);
     friendRequestModel = new repository_1.friendRequestRepository(model_1.FriendRequestModel);
@@ -57,12 +58,14 @@ class UserService {
             throw new error_response_1.BadRequestException("Fail to update user Profile Image");
         }
         if (req.user?.coverImage) {
-            await (0, s3_config_1.deleteFiles)({ urls: req.user.coverImage });
+            await (0, s3_config_1.deleteFiles)({ urls: req.user.coverImage || [] });
         }
-        return (0, success_response_1.successResponse)({ res, data: { user } });
+        return (0, success_response_1.successResponse)({ res, data: {
+                user,
+            } });
     };
     profile = async (req, res) => {
-        const profile = await this.userModel.findById({
+        const user = await this.userModel.findById({
             id: req.user?._id,
             options: {
                 populate: [
@@ -73,10 +76,20 @@ class UserService {
                 ]
             }
         });
-        if (!profile) {
+        if (!user) {
             throw new error_response_1.NotFoundException("fail to find your user profile");
         }
-        return (0, success_response_1.successResponse)({ res, data: { user: profile } });
+        const groups = await this.chatmodel.find({
+            filter: {
+                participants: {
+                    $in: req.user?._id
+                },
+                group: {
+                    $exists: true
+                },
+            }
+        });
+        return (0, success_response_1.successResponse)({ res, data: { user, groups } });
     };
     dashboard = async (req, res) => {
         const results = await Promise.allSettled([

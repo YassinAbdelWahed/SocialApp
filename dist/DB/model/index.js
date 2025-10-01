@@ -19,3 +19,4 @@ __exportStar(require("./User.model"), exports);
 __exportStar(require("./post.model"), exports);
 __exportStar(require("./comment.model"), exports);
 __exportStar(require("./friendRequest.model"), exports);
+__exportStar(require("./chat.model"), exports);

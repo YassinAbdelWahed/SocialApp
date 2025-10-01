@@ -8,18 +8,19 @@ import { createLoginCrendentials, createRevokeToken, LogoutEnum } from "../../ut
 import { JwtPayload } from "jsonwebtoken";
 import { uploadFiles, createPreSignedUploadLink, deleteFiles, deleteFolderByPrefix } from "../../utils/multer/s3.config";
 import { StorageEnum } from "../../utils/multer/cloud.multer";
-import { BadRequestException, ConflictException, ForbiddenException, NotFoundException, UnauthorizedException } from "../../utils/response/error.response";
+import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from "../../utils/response/error.response";
 import { s3Event } from "../../utils/multer/s3.event";
 import { successResponse } from "../../utils/response/success.response";
 import { IProfileImageResponse, IUserResponse } from "./user.entities";
 import { ILoginResponse } from "../auth/auth.entities";
-import { friendRequestRepository, PostRepository } from "../../DB/repository";
-import { FriendRequestModel, PostModel } from "../../DB/model";
+import { ChatRepository, friendRequestRepository, PostRepository } from "../../DB/repository";
+import { ChatModel, FriendRequestModel, PostModel } from "../../DB/model";
 
 class UserService {
-    private userModel = new UserRepository(UserModel);
-    private postModel = new PostRepository(PostModel);
-    private friendRequestModel = new friendRequestRepository(FriendRequestModel);
+    private chatmodel: ChatRepository = new ChatRepository(ChatModel);
+    private userModel: UserRepository = new UserRepository(UserModel);
+    private postModel: PostRepository = new PostRepository(PostModel);
+    private friendRequestModel: friendRequestRepository = new friendRequestRepository(FriendRequestModel);
 
     constructor() { }
 
@@ -78,14 +79,16 @@ class UserService {
         }
 
         if (req.user?.coverImage) {
-            await deleteFiles({ urls: req.user.coverImage });
+            await deleteFiles({ urls: req.user.coverImage || [] });
         }
 
-        return successResponse<IUserResponse>({ res, data: { user } })
+        return successResponse<IUserResponse>({ res, data: {
+            user,
+        } })
     };
 
     profile = async (req: Request, res: Response): Promise<Response> => {
-        const profile = await this.userModel.findById({
+        const user = await this.userModel.findById({
             id: req.user?._id as Types.ObjectId,
             options: {
                 populate: [
@@ -97,11 +100,21 @@ class UserService {
             }
         })
 
-        if (!profile) {
+        if (!user) {
             throw new NotFoundException("fail to find your user profile")
         }
+        const groups = await this.chatmodel.find({
+            filter: {
+                participants: {
+                    $in: req.user?._id as Types.ObjectId
+                },
+                group: {
+                    $exists: true
+                },
+            }
+        })
 
-        return successResponse<IUserResponse>({ res, data: { user: profile } });
+        return successResponse<IUserResponse>({ res, data: { user, groups } });
     };
 
     dashboard = async (req: Request, res: Response): Promise<Response> => {

@@ -18,6 +18,8 @@ import { createGetPreSignedLink, getFile } from "./utils/multer/s3.config";
 
 import { promisify } from "node:util";
 import { pipeline } from "node:stream";
+import { initializeTo } from "./modules/gateway";
+import { chatRouter } from "./modules/chat";
 const createS3WriteStreamPipe = promisify(pipeline)
 
 const limiter = rateLimit({
@@ -41,6 +43,7 @@ const bootstrap = async (): Promise<void> => {
     app.use("/auth", authRouter);
     app.use("/user", userRouter);
     app.use("/post", postRouter);
+    app.use("/chat", chatRouter);
 
     app.get("/upload/*path", async (req: Request, res: Response): Promise<void> => {
 
@@ -83,9 +86,10 @@ const bootstrap = async (): Promise<void> => {
 
     await connectDB()
 
-    app.listen(port, () => {
+    const httpServer = app.listen(port, () => {
         console.log(`Server is running on port ::: ${port}`)
-    })
+    });
+    initializeTo(httpServer)
 }
 
 export default bootstrap;

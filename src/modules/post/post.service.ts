@@ -9,6 +9,7 @@ import { deleteFiles, uploadFiles } from "../../utils/multer/s3.config";
 import { LikePostQueryInputsDto } from "./post.dtos";
 import { Types, UpdateQuery } from "mongoose";
 import { StorageEnum } from "../../utils/multer/cloud.multer";
+import { connectedSockets, getIo } from "../gateway";
 
 export const postAvailability = (req: Request) => {
     return [
@@ -169,6 +170,13 @@ class PostService {
         if (!post) {
             throw new NotFoundException("invalid postId or post not exist")
         }
+
+        if (action !== LikeActionEnum.unlike) {
+            getIo()
+                .to(connectedSockets.get(post.createdBy.toString()) as unknown as string[])
+                .emit("likePost", { postId, userId: req.user?._id, })
+        }
+
         return successResponse({ res });
     }
 
@@ -198,12 +206,12 @@ class PostService {
                                 freezedAt: { $exists: false },
                             },
                             populate: [{
-                            path: "reply",
-                            match: {
-                                commentId: { $exists: false },
-                                freezedAt: { $exists: false },
-                            }
-                        }]
+                                path: "reply",
+                                match: {
+                                    commentId: { $exists: false },
+                                    freezedAt: { $exists: false },
+                                }
+                            }]
                         }]
 
                     }

@@ -16,6 +16,8 @@ const connections_db_1 = __importDefault(require("./DB/connections.db"));
 const s3_config_1 = require("./utils/multer/s3.config");
 const node_util_1 = require("node:util");
 const node_stream_1 = require("node:stream");
+const gateway_1 = require("./modules/gateway");
+const chat_1 = require("./modules/chat");
 const createS3WriteStreamPipe = (0, node_util_1.promisify)(node_stream_1.pipeline);
 const limiter = (0, express_rate_limit_1.rateLimit)({
     windowMs: 60 * 60000,
@@ -33,6 +35,7 @@ const bootstrap = async () => {
     app.use("/auth", modules_1.authRouter);
     app.use("/user", modules_1.userRouter);
     app.use("/post", modules_1.postRouter);
+    app.use("/chat", chat_1.chatRouter);
     app.get("/upload/*path", async (req, res) => {
         const { downloadName, download = "false" } = req.query;
         const { path } = req.params;
@@ -61,8 +64,9 @@ const bootstrap = async () => {
     });
     app.use(error_response_1.globalErrorHandling);
     await (0, connections_db_1.default)();
-    app.listen(port, () => {
+    const httpServer = app.listen(port, () => {
         console.log(`Server is running on port ::: ${port}`);
     });
+    (0, gateway_1.initializeTo)(httpServer);
 };
 exports.default = bootstrap;

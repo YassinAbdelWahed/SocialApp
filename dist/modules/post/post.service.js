@@ -10,6 +10,7 @@ const uuid_1 = require("uuid");
 const s3_config_1 = require("../../utils/multer/s3.config");
 const mongoose_1 = require("mongoose");
 const cloud_multer_1 = require("../../utils/multer/cloud.multer");
+const gateway_1 = require("../gateway");
 const postAvailability = (req) => {
     return [
         { availability: post_model_1.AvailabilityEnum.public },
@@ -148,6 +149,11 @@ class PostService {
         });
         if (!post) {
             throw new error_response_1.NotFoundException("invalid postId or post not exist");
+        }
+        if (action !== post_model_1.LikeActionEnum.unlike) {
+            (0, gateway_1.getIo)()
+                .to(gateway_1.connectedSockets.get(post.createdBy.toString()))
+                .emit("likePost", { postId, userId: req.user?._id, });
         }
         return (0, success_response_1.successResponse)({ res });
     };
