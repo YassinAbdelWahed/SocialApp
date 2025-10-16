@@ -10,6 +10,6 @@ const router = Router({ mergeParams: true });
 
 router.post("/", authentication(), cloudFileUpload({ validation: fileValidation.image }).array("attachments", 2), validation(validators.createComment), commentService.createComment)
 
-router.post("/:commentId/reply", authentication(), cloudFileUpload({ validation: fileValidation.image }).array("attachments", 2), validation(validators.replyComment), commentService.replyComment)
+router.post("/:commentId/reply", authentication(), cloudFileUpload({ validation: fileValidation.image }).array("attachments", 2), validation(validators.replyComment), commentService.replyOnComment)
 
 export default router;

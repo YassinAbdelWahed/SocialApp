@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.hardDelete = exports.restoreAccount = exports.freezeAccount = exports.acceptFriendRequest = exports.sendFriendRequest = exports.changeRole = exports.logout = void 0;
+exports.hardDelete = exports.welcome = exports.restoreAccount = exports.freezeAccount = exports.acceptFriendRequest = exports.sendFriendRequest = exports.changeRole = exports.logout = void 0;
 const zod_1 = require("zod");
 const token_security_1 = require("../../utils/security/token.security");
 const mongoose_1 = require("mongoose");
@@ -49,4 +49,7 @@ exports.restoreAccount = {
         path: ["userId"],
     }),
 };
+exports.welcome = zod_1.z.strictObject({
+    name: zod_1.z.string().min(2),
+});
 exports.hardDelete = exports.restoreAccount;

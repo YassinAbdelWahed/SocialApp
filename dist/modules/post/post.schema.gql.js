@@ -32,17 +32,30 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const authentication_middleware_1 = require("../../middleware/authentication.middleware");
-const cloud_multer_1 = require("../../utils/multer/cloud.multer");
-const comment_service_1 = __importDefault(require("./comment.service"));
-const validators = __importStar(require("./comment.validation"));
-const validation_middleware_1 = require("../../middleware/validation.middleware");
-const router = (0, express_1.Router)({ mergeParams: true });
-router.post("/", (0, authentication_middleware_1.authentication)(), (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image }).array("attachments", 2), (0, validation_middleware_1.validation)(validators.createComment), comment_service_1.default.createComment);
-router.post("/:commentId/reply", (0, authentication_middleware_1.authentication)(), (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image }).array("attachments", 2), (0, validation_middleware_1.validation)(validators.replyComment), comment_service_1.default.replyOnComment);
-exports.default = router;
+const post_resolver_1 = require("./post.resolver");
+const gqlArgs = __importStar(require("./post.args.gql"));
+const gqlTypes = __importStar(require("./posts.types.gql"));
+class PostGqlSchema {
+    postResolver = new post_resolver_1.PostResolver();
+    constructor() { }
+    registerQuery = () => {
+        return {
+            allPosts: {
+                type: gqlTypes.allPosts,
+                args: gqlArgs.allPosts,
+                resolve: this.postResolver.allPosts,
+            }
+        };
+    };
+    registerMutation = () => {
+        return {
+            likePost: {
+                type: gqlTypes.GraphQLOnePostResponse,
+                args: gqlArgs.likePosts,
+                resolve: this.postResolver.likePosts,
+            }
+        };
+    };
+}
+exports.default = new PostGqlSchema();

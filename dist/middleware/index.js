@@ -13,13 +13,6 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserGQLSchema = exports.router = void 0;
-var user_controller_1 = require("./user.controller");
-Object.defineProperty(exports, "router", { enumerable: true, get: function () { return __importDefault(user_controller_1).default; } });
-var user_schema_gql_1 = require("./user.schema.gql");
-Object.defineProperty(exports, "UserGQLSchema", { enumerable: true, get: function () { return __importDefault(user_schema_gql_1).default; } });
-__exportStar(require("./user.types.gql"), exports);
+__exportStar(require("./authentication.middleware"), exports);
+__exportStar(require("./validation.middleware"), exports);

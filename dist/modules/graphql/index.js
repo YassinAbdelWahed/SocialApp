@@ -16,3 +16,4 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./schema.gql"), exports);
 __exportStar(require("./types.gql"), exports);
+__exportStar(require("./schema.interface"), exports);

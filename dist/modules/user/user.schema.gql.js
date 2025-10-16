@@ -33,40 +33,30 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-const graphql_1 = require("graphql");
 const gqlTypes = __importStar(require("./user.types.gql"));
 const gqlArgs = __importStar(require("./user.args.gql"));
+const user_resolver_1 = require("./user.resolver");
+const graphql_1 = require("graphql");
 class UserGQLSchema {
+    userResolver = new user_resolver_1.UserResolver();
     constructor() { }
     registerQuery = () => {
         return {
             sayHi: {
                 type: gqlTypes.welcome,
+                args: { name: { type: new graphql_1.GraphQLNonNull(graphql_1.GraphQLString) } },
                 description: "this field return our server welcome message !!!",
-                resolve: (parent, args) => {
-                    return "Hello graphl";
-                }
+                resolve: this.userResolver.welcome
             },
             allUsers: {
                 type: gqlTypes.allUsers,
                 args: gqlArgs.allUsers,
-                resolve: (parent, args) => {
-                    console.log(args);
-                    return users.filter((ele) => ele.name === args.name && ele.gender === args.gender);
-                }
+                resolve: this.userResolver.allUsers
             },
             searchUser: {
                 type: gqlTypes.search,
                 args: gqlArgs.searchUser,
-                resolve: (parent, args) => {
-                    const user = users.find((ele) => ele.email === args.email);
-                    if (!user) {
-                        throw new graphql_1.GraphQLError("fail to find matching result", {
-                            extensions: { statusCode: 404 }
-                        });
-                    }
-                    return { message: "Done", statusCode: 200, data: user };
-                }
+                resolve: this.userResolver.searchUsers
             }
         };
     };
@@ -75,15 +65,7 @@ class UserGQLSchema {
             addFollower: {
                 type: gqlTypes.addFollower,
                 args: gqlArgs.addFollower,
-                resolve: (parent, args) => {
-                    users = users.map((ele) => {
-                        if (ele.id === args.friendId) {
-                            ele.followers.push(args.myId);
-                        }
-                        return ele;
-                    });
-                    return users;
-                }
+                resolve: this.userResolver.addFollower,
             }
         };
     };

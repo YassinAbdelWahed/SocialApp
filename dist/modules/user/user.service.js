@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const user_repository_1 = require("../../DB/repository/user.repository");
-const User_model_1 = require("../../DB/model/User.model");
+const model_1 = require("../../DB/model");
 const token_security_1 = require("../../utils/security/token.security");
 const s3_config_1 = require("../../utils/multer/s3.config");
 const cloud_multer_1 = require("../../utils/multer/cloud.multer");
@@ -10,13 +10,14 @@ const error_response_1 = require("../../utils/response/error.response");
 const s3_event_1 = require("../../utils/multer/s3.event");
 const success_response_1 = require("../../utils/response/success.response");
 const repository_1 = require("../../DB/repository");
-const model_1 = require("../../DB/model");
+const model_2 = require("../../DB/model");
+const graphql_1 = require("graphql");
 let users = [
     {
         id: 1,
         name: "yassin",
         email: "yassin@gmail.com",
-        gender: User_model_1.GenderEnum.male,
+        gender: model_1.GenderEnum.male,
         password: "12345",
         followers: [],
     },
@@ -24,7 +25,7 @@ let users = [
         id: 2,
         name: "mohammed",
         email: "mohammed@gmail.com",
-        gender: User_model_1.GenderEnum.male,
+        gender: model_1.GenderEnum.male,
         password: "12345",
         followers: [],
     },
@@ -32,7 +33,7 @@ let users = [
         id: 3,
         name: "sara",
         email: "sara@gmail.com",
-        gender: User_model_1.GenderEnum.female,
+        gender: model_1.GenderEnum.female,
         password: "12345",
         followers: [],
     },
@@ -40,16 +41,16 @@ let users = [
         id: 4,
         name: "haya",
         email: "haya@gmail.com",
-        gender: User_model_1.GenderEnum.female,
+        gender: model_1.GenderEnum.female,
         password: "12345",
         followers: [],
     },
 ];
 class UserService {
-    chatmodel = new repository_1.ChatRepository(model_1.ChatModel);
-    userModel = new user_repository_1.UserRepository(User_model_1.UserModel);
-    postModel = new repository_1.PostRepository(model_1.PostModel);
-    friendRequestModel = new repository_1.friendRequestRepository(model_1.FriendRequestModel);
+    chatmodel = new repository_1.ChatRepository(model_2.ChatModel);
+    userModel = new user_repository_1.UserRepository(model_1.UserModel);
+    postModel = new repository_1.PostRepository(model_2.PostModel);
+    friendRequestModel = new repository_1.friendRequestRepository(model_2.FriendRequestModel);
     constructor() { }
     profileImage = async (req, res) => {
         const { ContentType, Originalname, } = req.body;
@@ -141,9 +142,9 @@ class UserService {
     changeRole = async (req, res) => {
         const { userId } = req.params;
         const { role } = req.body;
-        const denyRoles = [role, User_model_1.RoleEnum.superAdmin];
-        if (req.user?.role === User_model_1.RoleEnum.admin) {
-            denyRoles.push(User_model_1.RoleEnum.admin);
+        const denyRoles = [role, model_1.RoleEnum.superAdmin];
+        if (req.user?.role === model_1.RoleEnum.admin) {
+            denyRoles.push(model_1.RoleEnum.admin);
         }
         const user = await this.userModel.findOneAndUpdate({
             filter: {
@@ -226,7 +227,7 @@ class UserService {
     };
     freezeAccount = async (req, res) => {
         const { userId } = req.params || {};
-        if (userId && req.user?.role !== User_model_1.RoleEnum.admin) {
+        if (userId && req.user?.role !== model_1.RoleEnum.admin) {
             throw new error_response_1.ForbiddenException("not authorized user");
         }
         const user = await this.userModel.updateOne({
@@ -308,12 +309,32 @@ class UserService {
         await (0, token_security_1.createRevokeToken)(req.decoded);
         return (0, success_response_1.successResponse)({ res, data: { credentials } });
     };
-    welcome = () => {
-        return "hello";
+    welcome = (user) => {
+        console.log({ s: user });
+        return "Hello";
     };
-    allUsers = (args) => {
-        console.log(args);
-        return users.filter((ele) => ele.name === args.name && ele.gender === args.gender);
+    allUsers = async (args, authUser) => {
+        return await this.userModel.find({
+            filter: { _id: { $ne: authUser._id }, gender: args.gender }
+        });
+    };
+    searchUsers = (args) => {
+        const user = users.find((ele) => ele.email === args.email);
+        if (!user) {
+            throw new graphql_1.GraphQLError("fail to find matching result", {
+                extensions: { statusCode: 404 }
+            });
+        }
+        return { message: "Done", statusCode: 200, data: user };
+    };
+    addFollower = (args) => {
+        users = users.map((ele) => {
+            if (ele.id === args.friendId) {
+                ele.followers.push(args.myId);
+            }
+            return ele;
+        });
+        return users;
     };
 }
 exports.UserService = UserService;
