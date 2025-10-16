@@ -59,4 +59,8 @@ export const restoreAccount = {
     ),
 };
 
+export const welcome = z.strictObject({
+    name: z.string().min(2),
+});
+
 export const hardDelete = restoreAccount;

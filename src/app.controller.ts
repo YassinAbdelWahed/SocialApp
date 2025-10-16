@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import { config } from "dotenv";
-config({ path: resolve("./src/config/.env.dev") });
+config({ path: resolve("./config/.env.development") });
 
 import type { Request, Express, Response } from "express";
 import express from "express";
@@ -9,7 +9,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit"
 
-import { authRouter, postRouter, userRouter } from "./modules";
+import {authRouter,userRouter,postRouter} from './modules'
 
 import { BadRequestException, globalErrorHandling } from "./utils/response/error.response";
 import connectDB from "./DB/connections.db";
@@ -20,6 +20,11 @@ import { promisify } from "node:util";
 import { pipeline } from "node:stream";
 import { initializeTo } from "./modules/gateway";
 import { chatRouter } from "./modules/chat";
+import { schema } from "./modules/graphql";
+import { createHandler } from "graphql-http";
+import { authentication } from "./middleware/authentication.middleware";
+
+ 
 const createS3WriteStreamPipe = promisify(pipeline)
 
 const limiter = rateLimit({
@@ -86,10 +91,18 @@ const bootstrap = async (): Promise<void> => {
 
     await connectDB()
 
-    const httpServer = app.listen(port, () => {
+    const httpServer = app.listen(process.env.PORT, () => {
         console.log(`Server is running on port ::: ${port}`)
     });
-    initializeTo(httpServer)
+    //initializeIo(httpServer)
+
+   
+    app.get("/sayHi",(req:Request,res:Response):Response=>
+    {
+        return res.json({message:"Done"})
+    })
+
+    app.all('/graphql',authentication(),createHandler({schema:schema,context:(req)=>({user: req.raw})}))
 }
 
 export default bootstrap;

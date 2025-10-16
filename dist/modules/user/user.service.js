@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserService = void 0;
 const user_repository_1 = require("../../DB/repository/user.repository");
 const User_model_1 = require("../../DB/model/User.model");
 const token_security_1 = require("../../utils/security/token.security");
@@ -10,6 +11,40 @@ const s3_event_1 = require("../../utils/multer/s3.event");
 const success_response_1 = require("../../utils/response/success.response");
 const repository_1 = require("../../DB/repository");
 const model_1 = require("../../DB/model");
+let users = [
+    {
+        id: 1,
+        name: "yassin",
+        email: "yassin@gmail.com",
+        gender: User_model_1.GenderEnum.male,
+        password: "12345",
+        followers: [],
+    },
+    {
+        id: 2,
+        name: "mohammed",
+        email: "mohammed@gmail.com",
+        gender: User_model_1.GenderEnum.male,
+        password: "12345",
+        followers: [],
+    },
+    {
+        id: 3,
+        name: "sara",
+        email: "sara@gmail.com",
+        gender: User_model_1.GenderEnum.female,
+        password: "12345",
+        followers: [],
+    },
+    {
+        id: 4,
+        name: "haya",
+        email: "haya@gmail.com",
+        gender: User_model_1.GenderEnum.female,
+        password: "12345",
+        followers: [],
+    },
+];
 class UserService {
     chatmodel = new repository_1.ChatRepository(model_1.ChatModel);
     userModel = new user_repository_1.UserRepository(User_model_1.UserModel);
@@ -60,9 +95,11 @@ class UserService {
         if (req.user?.coverImage) {
             await (0, s3_config_1.deleteFiles)({ urls: req.user.coverImage || [] });
         }
-        return (0, success_response_1.successResponse)({ res, data: {
+        return (0, success_response_1.successResponse)({
+            res, data: {
                 user,
-            } });
+            }
+        });
     };
     profile = async (req, res) => {
         const user = await this.userModel.findById({
@@ -271,5 +308,13 @@ class UserService {
         await (0, token_security_1.createRevokeToken)(req.decoded);
         return (0, success_response_1.successResponse)({ res, data: { credentials } });
     };
+    welcome = () => {
+        return "hello";
+    };
+    allUsers = (args) => {
+        console.log(args);
+        return users.filter((ele) => ele.name === args.name && ele.gender === args.gender);
+    };
 }
+exports.UserService = UserService;
 exports.default = new UserService();

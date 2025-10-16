@@ -1,5 +1,5 @@
 import { HChatDocument } from "../../DB/model";
-import { HUserDocument } from "../../DB/model/User.model";
+import { HUserDocument } from "../../DB/model";
 
 export interface IProfileImageResponse {
     url: string;

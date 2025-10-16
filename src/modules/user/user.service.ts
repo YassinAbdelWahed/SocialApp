@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import { UserRepository } from "../../DB/repository/user.repository";
-import { HUserDocument, RoleEnum, UserModel } from "../../DB/model/User.model";
+import { GenderEnum, HUserDocument, RoleEnum, UserModel } from "../../DB/model";
 import { IFreezeAccountDto, IHardDeleteAccountDto, ILogoutDto, IRestoreAccountDto } from "./user.dto";
-import { Types, UpdateQuery } from "mongoose";
-import { IUser } from "../../DB/model/User.model";
+import { Document, Types, UpdateQuery } from "mongoose";
+// import { IUser } from "../../DB/model/User.model";
 import { createLoginCrendentials, createRevokeToken, LogoutEnum } from "../../utils/security/token.security";
 import { JwtPayload } from "jsonwebtoken";
 import { uploadFiles, createPreSignedUploadLink, deleteFiles, deleteFolderByPrefix } from "../../utils/multer/s3.config";
@@ -15,8 +15,54 @@ import { IProfileImageResponse, IUserResponse } from "./user.entities";
 import { ILoginResponse } from "../auth/auth.entities";
 import { ChatRepository, friendRequestRepository, PostRepository } from "../../DB/repository";
 import { ChatModel, FriendRequestModel, PostModel } from "../../DB/model";
+import { GraphQLError } from "graphql";
 
-class UserService {
+export interface IUser {
+    id: number;
+    name: string;
+    email: string;
+    gender: GenderEnum;
+    password: string;
+    followers: number[];
+}
+
+let users: IUser[] = [
+    {
+        id: 1,
+        name: "yassin",
+        email: "yassin@gmail.com",
+        gender: GenderEnum.male,
+        password: "12345",
+        followers: [],
+    },
+    {
+        id: 2,
+        name: "mohammed",
+        email: "mohammed@gmail.com",
+        gender: GenderEnum.male,
+        password: "12345",
+        followers: [],
+    },
+    {
+        id: 3,
+        name: "sara",
+        email: "sara@gmail.com",
+        gender: GenderEnum.female,
+        password: "12345",
+        followers: [],
+    },
+    {
+        id: 4,
+        name: "haya",
+        email: "haya@gmail.com",
+        gender: GenderEnum.female,
+        password: "12345",
+        followers: [],
+    },
+]
+
+
+export class UserService {
     private chatmodel: ChatRepository = new ChatRepository(ChatModel);
     private userModel: UserRepository = new UserRepository(UserModel);
     private postModel: PostRepository = new PostRepository(PostModel);
@@ -82,9 +128,11 @@ class UserService {
             await deleteFiles({ urls: req.user.coverImage || [] });
         }
 
-        return successResponse<IUserResponse>({ res, data: {
-            user,
-        } })
+        return successResponse<IUserResponse>({
+            res, data: {
+                user,
+            }
+        })
     };
 
     profile = async (req: Request, res: Response): Promise<Response> => {
@@ -337,6 +385,37 @@ class UserService {
         return successResponse<ILoginResponse>({ res, data: { credentials } });
 
     };
+
+    welcome = (user: HUserDocument): string => {
+        console.log({ s: user })
+        return "Hello";
+    };
+
+    allUsers = async (args: { gender: GenderEnum; }, authUser: HUserDocument): Promise<HUserDocument[]> => {
+        return await this.userModel.find({
+            filter: { _id: { $ne: authUser._id }, gender: args.gender }
+        })
+    }
+
+    searchUsers = (args: { email: string; }): { message: string; statusCode: number; data: IUser } => {
+        const user = users.find((ele) => ele.email === args.email);
+        if (!user) {
+            throw new GraphQLError("fail to find matching result", {
+                extensions: { statusCode: 404 }
+            })
+        }
+        return { message: "Done", statusCode: 200, data: user }
+    }
+
+    addFollower = (args: { friendId: number; myId: number }): IUser[] => {
+        users = users.map((ele: IUser): IUser => {
+            if (ele.id === args.friendId) {
+                ele.followers.push(args.myId);
+            }
+            return ele;
+        });
+        return users;
+    }
 
 }
 

@@ -25,10 +25,12 @@ const limiter = (0, express_rate_limit_1.rateLimit)({
     message: { error: "too many request plz try again" },
     statusCode: 429,
 });
+const express_2 = require("graphql-http/lib/use/express");
 const bootstrap = async () => {
     const app = (0, express_1.default)();
     const port = process.env.PORT || 5000;
     app.use((0, cors_1.default)(), express_1.default.json(), (0, helmet_1.default)(), limiter);
+    app.all("/graphql", (0, express_2.createHandler)({ schema: modules_1.schema }));
     app.get("/", (req, res) => {
         res.json({ message: `Welcome to ${process.env.APPLICATION_NAME} backend landing page` });
     });

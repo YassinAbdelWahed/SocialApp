@@ -5,7 +5,7 @@ import { deleteFile, getFile } from "./s3.config";
 import { UpdateQuery } from "mongoose";
 export const s3Event = new EventEmitter({});
 
-s3Event.on("trackProfileImageUpload", (data) => {
+ s3Event.on("trackProfileImageUpload", (data) => {
     console.log({ data });
 
     setTimeout(async () => {
